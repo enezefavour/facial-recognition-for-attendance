@@ -112,6 +112,30 @@ class DetectFace:
     def stop(self):
         self.stopped = True
 
+class CaptureImage:
+    def take_photo(frame):
+        now = datetime.now()
+        dt_string = now.strftime("%d%m%Y%H%M%S")
+        img_name = "{}.png".format(dt_string)
+        img_dir = 'Pictures'
+        path = os.path.join(img_dir, img_name)
+        cv2.imwrite(path, frame)
+        return path
+class Recognize:
+    def process(frame, face_locations, known_face_encodings, known_face_names):
+        face_encodings = []
+        face_names = []
+
+        [known_face_encodings, known_face_names] = Duplicate.duplicate()
+        face_encodings = face_recognition.face_encodings(frame, face_locations)
+        # print(face_locations)
+        for face_encoding in face_encodings:
+
+            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+            name = "Unknown"
+            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
+
+            best_match_index = np.argmin(face_distances)    
 def main():
     known_face_encodings, known_face_names = Duplicate.duplicate()
     capture = CaptureVideo().start()  # Start the capturing thread
@@ -123,7 +147,13 @@ def main():
             break
 
         frame = capture.read()  # read a frame from the capturing thread
-    
+        face_locations = face_detector.face_locations  # ask the face detector to send you locations if any
+        frame = imutils.resize(frame, width=450)  # resize the frame because the detector is also resizing the frame
+
+        for top, right, bottom, left in face_locations:
+            cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)  # Draw the rectangles
+
+
         cv2.imshow('Video', frame)  # Show the video
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
