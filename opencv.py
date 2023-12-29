@@ -7,6 +7,8 @@ import face_recognition
 from datetime import datetime
 import os
 import requests
+import base64
+import json
 
 class CaptureVideo:
     def __init__(self, src=0):
@@ -54,11 +56,6 @@ class Duplicate:
 
             if True in same:
                 filepath = os.path.join(img_dir, current_names[count])
-                # print(filepath)
-                # os.remove(filepath)
-                # faces_to_delete.append(known_face_names[count])
-                # known_face_names.pop(count)
-                # known_face_encodings.pop(count)
 
             face_distances = face_recognition.face_distance(temp_array, current_encodings[count])
             best_match_index = np.argmin(face_distances)
@@ -121,6 +118,7 @@ class CaptureImage:
         path = os.path.join(img_dir, img_name)
         cv2.imwrite(path, frame)
         return path
+    
 class Recognize:
     def process(frame, face_locations, known_face_encodings, known_face_names):
         face_encodings = []
@@ -135,7 +133,46 @@ class Recognize:
             name = "Unknown"
             face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
 
-            best_match_index = np.argmin(face_distances)    
+            best_match_index = np.argmin(face_distances)
+
+            if matches[best_match_index]:
+                name = known_face_names[best_match_index]
+            if len(face_locations) == 1:
+                if name == "Unknown":
+                    hash_face = hash(face_encoding.tostring())
+                    print(hash_face)
+                    img_path = CaptureImage.take_photo(frame)
+                    print(img_path)
+                    print("begin API call")
+
+                    with open(img_path, "rb") as f:
+                        im_bytes = f.read()
+                    print("reading complete")
+                    im_b64 = base64.b64encode(im_bytes).decode("utf8")
+
+                    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+                    url = 'http://127.0.0.1:8000/register_new_face/'
+                    obj = {
+                        'name': 'unknown',
+                        'image': im_b64,
+                        'hash': hash_face
+                    }
+                    json_object = json.dumps(obj)
+
+                    response = requests.post(url, data=json_object, headers=headers)
+                    print(response.text)
+                    # try:
+                    #     data = response.json()
+                    #     print("API Call Success")
+                    #     print(data)
+                    # except:
+                    #     print("API Call Failure")
+                    #     print(response.text)
+
+            face_names.append(name)
+
+        return face_names   
 def main():
     known_face_encodings, known_face_names = Duplicate.duplicate()
     capture = CaptureVideo().start()  # Start the capturing thread
@@ -159,7 +196,7 @@ def main():
             break
 
     # Release handle to the webcam
-    capture.stop()  # kill the capture thread
+    capture.stop()  
     cv2.destroyAllWindows()
 
 main()
