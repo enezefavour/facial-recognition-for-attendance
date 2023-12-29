@@ -1,0 +1,103 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<div id="content" class="app-content" xmlns="http://www.w3.org/1999/html">
+    <div class="d-flex align-items-center mb-3">
+        <div>
+
+            <h1 class="page-header mb-0">Edit Information</h1>
+        </div>
+    </div>
+    <div class="row gx-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center bg-white bg-opacity-15 fw-400">
+                Capture Profile
+                </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="mb-3">
+
+                                <label class="form-label">Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="names" value="{{person.name}}" placeholder="Your name">
+                            </div>
+                            <div class="">
+                                <label class="form-label">Gender <span class="text-danger">*</span></label>
+                                <div class="form-control p-0">
+                                    <input type="text" class="form-control" name="gender" value="{{person.gender}}"  placeholder="Gender">
+                                </div>
+                            </div>
+                                </br>
+                            <input name="person_id" type="hidden" value="{{person.id}}" />
+                            <button type="submit" id ="submit" class="btn btn-outline-default me-2 mb-1 start">
+                                <i class="fa fa-fw fa-upload"></i>
+                                <span>Update</span>
+                            </button>
+
+                            <button type="button" class="btn btn-outline-default me-2 mb-1 delete">
+                                <i class="fa fa-fw fa-trash"></i>
+                                <span>Delete</span>
+                            </button>
+                        </div>
+                    </form>
+                <div class="card-arrow">
+                    <div class="card-arrow-top-left"></div>
+                    <div class="card-arrow-top-right"></div>
+                    <div class="card-arrow-bottom-left"></div>
+                    <div class="card-arrow-bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <ul class="nav nav-tabs nav-tabs-v2 px-4">
+          <li class="nav-item me-3"><a href="#allTab" class="nav-link active px-2" data-bs-toggle="tab">All</a></li>
+<!--          <li class="nav-item me-3"><a href="#publishedTab" class="nav-link px-2" data-bs-toggle="tab">Published</a></li>-->
+<!--          <li class="nav-item me-3"><a href="#expiredTab" class="nav-link px-2" data-bs-toggle="tab">Expired</a></li>-->
+<!--          <li class="nav-item me-3"><a href="#deletedTab" class="nav-link px-2" data-bs-toggle="tab">Deleted</a></li>-->
+        </ul>
+         <div class="tab-content p-4">
+            <div class="tab-pane fade show active" id="allTab">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="input-group mb-4">
+                        <input type="text" name="start_date" class="btn btn-outline-default dropdown-toggle" style ="background-color: transparent; color: #bcbfc2; margin-left: 5px;"  placeholder="Start Date"  id="startDate" name="startDate" onfocus="(this.type='date')">
+                        <input type="text" name="end_date" class="btn btn-outline-default dropdown-toggle textbox-n" style ="background-color: transparent; color: #bcbfc2; margin-left: 5px;"  placeholder="End Date"  id="EndDate" name="startDate" onfocus="(this.type='date')">
+                        <input name="search" value= "{{person.person.name}}" type="hidden" />
+                        <input type="submit" class="btn btn-outline-default dropdown-toggle " style="margin-left: 5px;">
+                    </div>
+                </form>
+                <div class="table-responsive">
+                      <table class="table table-hover text-nowrap" id="attendance_datatable">
+                        <thead>
+                        <tr>
+
+                          <th class="pt-0 pb-2">Person_id</th>
+                          <th class="pt-0 pb-2">Time_in</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for person in attendance %}
+                        <tr>
+                          <td class="align-middle">{{person.person.name}}</td>
+                          <td class="align-middle">{{person.time_in}}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                      </table>
+
+                  </div>
+            </div>
+         </div>
+        <div class="card-arrow">
+          <div class="card-arrow-top-left"></div>
+          <div class="card-arrow-top-right"></div>
+          <div class="card-arrow-bottom-left"></div>
+          <div class="card-arrow-bottom-right"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

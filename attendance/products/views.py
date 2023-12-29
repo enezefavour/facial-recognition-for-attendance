@@ -54,3 +54,21 @@ def register_new_face(request):
     else:
         print('Wrong Request Type')
     return HttpResponse(message)
+@csrf_exempt
+def attendance_view(request):
+    message = "Time in Failed"
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        hash = body["known_hash"]
+
+        search = People.objects.all().filter(hashed_face=hash)
+        if search.count() > 0:
+            now = datetime.now()
+            today_day = datetime.now().day
+            today_month = datetime.now().month
+            person = search[0]
+            time_in_search = Attendance.objects.all().filter(person=person, time_in__day=today_day, time_in__month=today_month)
+            if time_in_search.count() == 0:
+                Attendance.objects.create(person=person, time_in=now)
+            message = "Time in Success"
+    return HttpResponse(message)
