@@ -74,11 +74,49 @@ class Duplicate:
         known_face_names = current_names
         return known_face_encodings, known_face_names
 
+class DetectFace:
+    def __init__(self, capture, known_encodings, known_names):
+        self.capture = capture
+        self.stopped = False
+        self.face_locations = []
+        self.face_names = []
+        self.known_encodings = known_encodings
+        self.known_names = known_names
+
+    def start(self):
+        Thread(target=self.process, args=()).start()
+        return self
+
+    def process(self):
+        while not self.stopped:
+            frame = self.capture.read()
+
+            frame = imutils.resize(frame, width=450)
+
+            frame = frame[:, :, ::-1]
+
+            self.face_locations = face_recognition.face_locations(frame)
+
+            # print(self.face_locations)
+            # faceCascade = cv2.CascadeClassifier("haarcascade.xml")
+            # gray = cv2.cvtColor(rgb_frame, cv2.COLOR_BGR2GRAY)
+            
+            try:
+                self.face_names = Recognize.process(frame=frame, face_locations=self.face_locations,
+                                                    known_face_encodings=self.known_encodings,
+                                                    known_face_names=self.known_names)
+            except:
+                print("no faces to recognize")
+            print(self.face_names)
+
+    def stop(self):
+        self.stopped = True
 
 def main():
     known_face_encodings, known_face_names = Duplicate.duplicate()
     capture = CaptureVideo().start()  # Start the capturing thread
-    
+    face_detector = DetectFace(capture=capture, known_encodings=known_face_encodings,
+                               known_names=known_face_names).start()
     while True:
         if capture.stopped:
             capture.stop()
